@@ -153,7 +153,7 @@ reMarked = function(opts) {
 	var isIE = eval("/*@cc_on!@*/!1"),
 		docMode = document.documentMode,
 		ieLt9 = isIE && (!docMode || docMode < 9),
-		textContProp = ieLt9 ? "innerText" : "textContent";
+		textContProp = "textContent" in Element.prototype || !ieLt9 ? "textContent" : "innerText";
 
 	extend(cfg, opts);
 
@@ -495,7 +495,6 @@ reMarked = function(opts) {
 		});
 
 		lib.list = lib.blk.extend({
-			expn: false,
 			wrap: [function(){return this.p instanceof lib.li ? "\n" : "\n\n";}, ""]
 		});
 
@@ -505,7 +504,7 @@ reMarked = function(opts) {
 
 		lib.li = lib.cblk.extend({
 			wrap: ["\n", function(kids) {
-				return this.p.expn || kids.match(/\n{2}/gm) ? "\n" : "";			// || this.kids.match(\n)
+				return (this.c[0] && this.c[0] instanceof(lib.p)) || kids.match(/\n{2}/gm) ? "\n" : "";			// || this.kids.match(\n)
 			}],
 			wrapK: [function() {
 				return this.p.tag == "ul" ? cfg.li_bullet + " " : (this.i + 1) + ".  ";
@@ -564,7 +563,7 @@ reMarked = function(opts) {
 					href = this.e.getAttribute("href"),
 					title = this.e.title ? ' "' + this.e.title + '"' : "";
 
-				if (!href || href == kids || href[0] == "#" && !cfg.hash_lnks)
+				if (!this.e.hasAttribute("href") || href == kids || href[0] == "#" && !cfg.hash_lnks)
 					return kids;
 
 				if (cfg.link_list)
