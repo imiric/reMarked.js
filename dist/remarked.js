@@ -4,7 +4,93 @@
   * https://github.com/ded/klass
   * License MIT (c) Dustin Diaz 2014
   */
-!function(e,t,n){typeof define=="function"?define(n):typeof module!="undefined"?module.exports=n():t[e]=n()}("klass",this,function(){function i(e){return a.call(s(e)?e:function(){},e,1)}function s(e){return typeof e===t}function o(e,t,n){return function(){var i=this.supr;this.supr=n[r][e];var s={}.fabricatedUndefined,o=s;try{o=t.apply(this,arguments)}finally{this.supr=i}return o}}function u(e,t,i){for(var u in t)t.hasOwnProperty(u)&&(e[u]=s(t[u])&&s(i[r][u])&&n.test(t[u])?o(u,t[u],i):t[u])}function a(e,t){function n(){}function c(){this.initialize?this.initialize.apply(this,arguments):(t||a&&i.apply(this,arguments),f.apply(this,arguments))}n[r]=this[r];var i=this,o=new n,a=s(e),f=a?e:this,l=a?{}:e;return c.methods=function(e){return u(o,e,i),c[r]=o,this},c.methods.call(c,l).prototype.constructor=c,c.extend=arguments.callee,c[r].implement=c.statics=function(e,t){return e=typeof e=="string"?function(){var n={};return n[e]=t,n}():e,u(this,e,i),this},c}var e=this,t="function",n=/xyz/.test(function(){xyz})?/\bsupr\b/:/.*/,r="prototype";return i})
+
+!function (name, context, definition) {
+  if (typeof define == 'function') define(definition)
+  else if (typeof module != 'undefined') module.exports = definition()
+  else context[name] = definition()
+}('klass', this, function () {
+  var context = this
+    , f = 'function'
+    , fnTest = /xyz/.test(function () {xyz}) ? /\bsupr\b/ : /.*/
+    , proto = 'prototype'
+
+  function klass(o) {
+    return extend.call(isFn(o) ? o : function () {}, o, 1)
+  }
+
+  function isFn(o) {
+    return typeof o === f
+  }
+
+  function wrap(k, fn, supr) {
+    return function () {
+      var tmp = this.supr
+      this.supr = supr[proto][k]
+      var undef = {}.fabricatedUndefined
+      var ret = undef
+      try {
+        ret = fn.apply(this, arguments)
+      } finally {
+        this.supr = tmp
+      }
+      return ret
+    }
+  }
+
+  function process(what, o, supr) {
+    for (var k in o) {
+      if (o.hasOwnProperty(k)) {
+        what[k] = isFn(o[k])
+          && isFn(supr[proto][k])
+          && fnTest.test(o[k])
+          ? wrap(k, o[k], supr) : o[k]
+      }
+    }
+  }
+
+  function extend(o, fromSub) {
+    // must redefine noop each time so it doesn't inherit from previous arbitrary classes
+    function noop() {}
+    noop[proto] = this[proto]
+    var supr = this
+      , prototype = new noop()
+      , isFunction = isFn(o)
+      , _constructor = isFunction ? o : this
+      , _methods = isFunction ? {} : o
+    function fn() {
+      if (this.initialize) this.initialize.apply(this, arguments)
+      else {
+        fromSub || isFunction && supr.apply(this, arguments)
+        _constructor.apply(this, arguments)
+      }
+    }
+
+    fn.methods = function (o) {
+      process(prototype, o, supr)
+      fn[proto] = prototype
+      return this
+    }
+
+    fn.methods.call(fn, _methods).prototype.constructor = fn
+
+    fn.extend = arguments.callee
+    fn[proto].implement = fn.statics = function (o, optFn) {
+      o = typeof o == 'string' ? (function () {
+        var obj = {}
+        obj[o] = optFn
+        return obj
+      }()) : o
+      process(this, o, supr)
+      return this
+    }
+
+    return fn
+  }
+
+  return klass
+});
+
 },{}],2:[function(require,module,exports){
 /**
 * Copyright (c) 2013, Leon Sorokin
@@ -13,7 +99,7 @@
 * reMarked.js - HTML > markdown
 */
 
-var klass = require('./lib/klass.min.js');
+var klass = require('klass');
 
 reMarked = function(opts) {
 
@@ -696,4 +782,4 @@ if (module) {
 	module.exports = reMarked;
 }
 
-},{"./lib/klass.min.js":1}]},{},[2])
+},{"klass":1}]},{},[2]);

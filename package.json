@@ -24,7 +24,9 @@
     "url": "https://github.com/venil7/reMarked.js/issues"
   },
   "homepage": "https://github.com/venil7/reMarked.js",
-  "dependencies": {},
+  "dependencies": {
+    "klass": "~1.4.0"
+  },
   "devDependencies": {
     "grunt": "~0.4.5",
     "matchdep": "~0.3.0",

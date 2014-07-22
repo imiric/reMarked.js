@@ -5,7 +5,7 @@
 * reMarked.js - HTML > markdown
 */
 
-var klass = require('./lib/klass.min.js');
+var klass = require('klass');
 
 reMarked = function(opts) {
 
